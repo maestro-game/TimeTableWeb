@@ -1,0 +1,11 @@
+header {
+  height: 50px;
+}
+
+.alert-warning {
+  padding: 0.5rem;
+}
+
+.warning-title {
+  margin-right: 0.5rem;
+}

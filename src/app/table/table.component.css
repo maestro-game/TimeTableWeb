@@ -6,15 +6,63 @@ body {
   position: fixed;
   overflow: scroll;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 50px);
   background: whitesmoke;
   display: grid;
-  grid-template-columns: auto repeat(3, 1fr);
-  grid-template-rows: auto repeat(3, 1fr);
 }
 
-header {
-  height: 80px;
+.subject-name {
+  display: inline-block;
+  max-width: 80%;
+  min-width: 50%;
+  white-space: nowrap
+}
+
+.classroom-name {
+  display: inline-block;
+  max-width: available;
+  min-width: 20%;
+  float: right;
+  white-space: nowrap
+}
+
+.teacher-name {
+  width: 100%;
+  white-space: nowrap
+}
+
+.type-name {
+  display: inline-block;
+  max-width: 80%;
+  min-width: 50%;
+  white-space: nowrap
+}
+
+.parity-name {
+  display: inline-block;
+  max-width: available;
+  min-width: 20%;
+  float: right;
+  white-space: nowrap
+}
+
+.time-popup {
+  position: absolute;
+  background: wheat;
+}
+
+.tab-element {
+  cursor: pointer;
+  padding: 4px 16px 4px 16px;
+}
+
+.lesson-item {
+  border-top: grey 1px solid;
+  border-bottom: gray 1px solid;
+  width: 100%;
+  height: 72px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .table-container {
@@ -22,41 +70,105 @@ header {
 }
 
 .table-item {
-  border: 1px red solid;
+  border-right: 2px red solid;
+  border-bottom: 2px red solid;
   display: flex;
-  width: 1000px;
-  height: 500px;
+  width: 250px;
+  height: 624px;
+}
+
+.lesson-list {
+  width: 100%;
+  height: 100%;
 }
 
 .cell {
   margin: auto;
-  background: black;
-  color: white;
+  color: orange;
 }
 
 .corner {
-  width: 100px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   position: fixed;
   background: darkblue;
-  border: 1px red solid;
+  border-right: 2px red solid;
+  border-bottom: 2px red solid;
   z-index: 30;
 }
 
 .day-of-week {
-  width: 100px;
+  width: 30px;
   background: wheat;
   z-index: 10;
   position: sticky;
+  padding: -30px;
   left: 0;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
+  writing-mode: tb-rl;
+  transform: scale(-1, -1);
+  border: none;
+  border-left: 2px red solid;
+  border-top: 2px red solid;
+  text-orientation: sideways;
+  font-size: large;
+  font-weight: bold;
 }
 
 .group-number {
-  height: 50px;
+  height: 30px;
   background: darkblue;
   z-index: 20;
   top: 0;
   position: sticky;
+  font-size: large;
+  font-weight: bold;
+}
+
+.warning-button {
+  padding: 0 0.2rem 0 0.2rem;
+  background: transparent;
+}
+
+.alert {
+  margin-bottom: 0;
+}
+
+.form-control {
+  height: 28px;
+  border-color: rgb(170, 170, 170);
+}
+
+.subject-dropdown {
+  position: absolute;
+  z-index: 100;
+}
+
+.background-trigger-pane {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+}
+
+.list-group-results {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.list-group-item {
+  padding: 4px 2px 4px 2px;
+}
+
+.full-length-list-items {
+  width: 244px;
+}
+
+.classroom-list-items {
+  width: 150px;
+}
+
+.type-list-items {
+  width: 194px;
 }

@@ -1,54 +1,205 @@
-<app-header></app-header>
-<div class="table-container">
+<ul *ngIf="hc.data" class="nav nav-tabs" xmlns="http://www.w3.org/1999/html">
+  <li *ngFor="let course of hc.data.courses" class="nav-item" (click)="hc.selectCourse(course)">
+    <a class="nav-link tab-element" [class.active]="course == hc.curData!.course">{{course.course_number}} курс</a>
+  </li>
+</ul>
+<div *ngIf="hc.curData" class="table-container">
   <div class="corner"></div>
-  <div class="main-table">
+  <!--Table-->
+  <div class="main-table" [style.grid-template-columns]="fixStyle()">
     <div class="table-item day-of-week group-number">
       <div class="cell"></div>
     </div>
-    <div class="table-item group-number">
-      <div class="cell">---------------2-----------------</div>
+    <div *ngFor="let group of hc.curData!.groups" class="table-item group-number">
+      <div class="cell">{{group.group_number}}</div>
     </div>
-    <div class="table-item group-number">
-      <div class="cell">---------------3-----------------</div>
-    </div>
-    <div class="table-item group-number">
-      <div class="cell">---------------4-----------------</div>
-    </div>
-    <div class="table-item day-of-week">
-      <div class="cell">Понедельник</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------6-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------7-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------8-----------------</div>
-    </div>
-    <div class="table-item day-of-week">
-      <div class="cell">Вторник</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------10-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------11-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------12-----------------</div>
-    </div>
-    <div class="table-item day-of-week">
-      <div class="cell">Среда</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------14-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------15-----------------</div>
-    </div>
-    <div class="table-item">
-      <div class="cell">---------------16-----------------</div>
+    <ng-container *ngFor="let day of [1, 2, 3, 4, 5, 6, 7] || []">
+      <div class="table-item day-of-week">
+        <div class="cell">{{daysOfWeek[day - 1]}}</div>
+      </div>
+      <div *ngFor="let group of hc.curData!.groups" class="table-item" (click)="createLessonClick(day, group)">
+        <div class="lesson-list">
+          <div *ngFor="let lesson of (hc.curData!.lessons![day]?.get(group.group_number) || [])"
+               class="lesson-item" (mousemove)="showingTime = {lesson, left: $event.x - 35, top: $event.y + 18}" (mouseleave)="showingTime.lesson = null"
+               style="{{'margin-top: ' + calcOffset(lesson, 1) + 'px'}}" (contextmenu)="clickLesson(lesson, $event)"
+               (click)="$event.stopPropagation()" [id]="'ls' + lesson.id">
+            <span (click)="clickSubjectName(lesson)" class="subject-name">{{lesson.subject.name}}</span>
+            <span (click)="clickClassroom(lesson)" class="classroom-name">{{lesson.classroom}}</span>
+            <div (click)="clickTeacherName(lesson)" class="teacher-name">{{lesson.teacher.name}}</div>
+            <span (click)="clickTypeName(lesson)" class="type-name">{{lesson.getTypeName()}}</span>
+            <span (click)="clickParityName(lesson)" class="parity-name">{{lesson.getEvenName()}}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+<!--Subject dropdown-->
+<div style="{{'display:' + (dropDownSubject.lesson ? 'block' : 'none')}}">
+  <div class="background-trigger-pane" (click)="dropDownSubject.lesson = null; subjectForm.reset()"></div>
+  <div class="list-group subject-dropdown type-list-items"
+       style="{{dropDownSubject ? 'top:' + dropDownSubject.top + 'px; left: ' + dropDownSubject.left + 'px' + afterDropDownSubject() : ''}}">
+    <input autocomplete="off" type="text" class="list-group-item list-group-item-action" id="dropDownSubjectSearch"
+           placeholder="Предмет" ngModel #subjectForm="ngModel" (ngModelChange)="searchSubject(subjectForm.value)"
+           (keydown.enter)="editSubject(subjectSearchResults![dropDownSubject.index])"
+           (keydown.escape)="dropDownSubject.lesson = null; subjectForm.reset()"
+           (keydown.arrowUp)="dropDownSubject.index = (dropDownSubject.index + subjectSearchResults!.length - 1) % subjectSearchResults!.length"
+           (keydown.arrowDown)="dropDownSubject.index = (dropDownSubject.index + 1) % subjectSearchResults!.length">
+    <div class="list-group-results">
+      <button *ngFor="let subject of subjectSearchResults; let index = index" type="button" (click)="editSubject(subject)"
+              [class.list-group-item-secondary]="subject == dropDownSubject.lesson?.subject"
+              [class.active]="index == dropDownSubject.index"
+              class="list-group-item list-group-item-action">{{subject.name}}</button>
     </div>
   </div>
+</div>
+<!--Classroom dropdown-->
+<div style="{{'display:' + (dropDownClassroom.lesson ? 'block' : 'none')}}">
+  <div class="background-trigger-pane" (click)="dropDownClassroom.lesson = null; classroomForm.reset()"></div>
+  <div class="list-group subject-dropdown classroom-list-items"
+       style="{{dropDownClassroom ? 'top:' + dropDownClassroom.top + 'px; left: ' + dropDownClassroom.left + 'px' + afterDropDownClassroom() : ''}}">
+    <input autocomplete="off" type="text" class="list-group-item list-group-item-action" id="dropDownClassroomSearch"
+           placeholder="Аудитория" ngModel #classroomForm="ngModel" (ngModelChange)="searchClassroom(classroomForm.value)"
+           (keydown.enter)="editClassroom(classroomSearchResults![dropDownClassroom.index])"
+           (keydown.escape)="dropDownClassroom.lesson = null; classroomForm.reset()"
+           (keydown.arrowUp)="dropDownClassroom.index = (dropDownClassroom.index + classroomSearchResults!.length - 1) % classroomSearchResults!.length"
+           (keydown.arrowDown)="dropDownClassroom.index = (dropDownClassroom.index + 1) % classroomSearchResults!.length">
+    <div class="list-group-results">
+      <button *ngFor="let classroom of classroomSearchResults; let index = index" type="button" (click)="editClassroom(classroom)"
+              [class.list-group-item-secondary]="classroom == dropDownClassroom.lesson?.classroom"
+              [class.active]="index == dropDownClassroom.index"
+              class="list-group-item list-group-item-action">{{classroom}}</button>
+    </div>
+  </div>
+</div>
+<!--Teacher dropdown-->
+<div style="{{'display:' + (dropDownTeacher.lesson ? 'block' : 'none')}}">
+  <div class="background-trigger-pane" (click)="dropDownTeacher.lesson = null; teacherForm.reset()"></div>
+  <div class="list-group subject-dropdown full-length-list-items"
+       style="{{dropDownTeacher ? 'top:' + dropDownTeacher.top + 'px; left: ' + dropDownTeacher.left + 'px' + afterDropDownTeacher() : ''}}">
+    <input autocomplete="off" type="text" class="list-group-item list-group-item-action" id="dropDownTeacherSearch"
+           placeholder="Преподаватель" ngModel #teacherForm="ngModel" (ngModelChange)="searchTeacher(teacherForm.value)"
+           (keydown.enter)="editTeacher(teacherSearchResults![dropDownTeacher.index])"
+           (keydown.escape)="dropDownTeacher.lesson = null; teacherForm.reset()"
+           (keydown.arrowUp)="dropDownTeacher.index = (dropDownTeacher.index + teacherSearchResults!.length - 1) % teacherSearchResults!.length"
+           (keydown.arrowDown)="dropDownTeacher.index = (dropDownTeacher.index + 1) % teacherSearchResults!.length">
+    <div class="list-group-results">
+      <button *ngFor="let teacher of teacherSearchResults; let index = index" type="button" (click)="editTeacher(teacher)"
+              [class.list-group-item-secondary]="teacher == dropDownTeacher.lesson?.teacher"
+              [class.active]="index == dropDownTeacher.index"
+              class="list-group-item list-group-item-action">{{teacher.name}}</button>
+    </div>
+  </div>
+</div>
+<!--Type dropdown-->
+<div style="{{'display:' + (dropDownType.lesson ? 'block' : 'none')}}">
+  <div class="background-trigger-pane" (click)="dropDownType.lesson = null; typeForm.reset()"></div>
+  <div class="list-group subject-dropdown type-list-items"
+       style="{{dropDownType ? 'top:' + dropDownType.top + 'px; left: ' + dropDownType.left + 'px' + afterDropDownType() : ''}}">
+    <input autocomplete="off" type="text" class="list-group-item list-group-item-action" id="dropDownTypeSearch"
+           placeholder="Тип" ngModel #typeForm="ngModel" (ngModelChange)="searchType(typeForm.value)"
+           (keydown.enter)="editType(typeSearchResults![dropDownType.index])"
+           (keydown.escape)="dropDownType.lesson = null; typeForm.reset()"
+           (keydown.arrowUp)="dropDownType.index = (dropDownType.index + typeSearchResults!.length - 1) % typeSearchResults!.length"
+           (keydown.arrowDown)="dropDownType.index = (dropDownType.index + 1) % typeSearchResults!.length">
+    <div class="list-group-results">
+      <button *ngFor="let type of typeSearchResults; let index = index" type="button" (click)="editType(type)"
+              [class.list-group-item-secondary]="type.id == dropDownType.lesson?.type"
+              [class.active]="index == dropDownType.index"
+              class="list-group-item list-group-item-action">{{type.name}}</button>
+    </div>
+  </div>
+</div>
+<!--Even dropdown-->
+<div style="{{'display:' + (dropDownParity.lesson ? 'block' : 'none')}}">
+  <div class="background-trigger-pane" (click)="dropDownParity.lesson = null; parityForm.reset()"></div>
+  <div class="list-group subject-dropdown classroom-list-items"
+       style="{{dropDownParity ? 'top:' + dropDownParity.top + 'px; left: ' + dropDownParity.left + 'px' + afterDropDownParity() : ''}}">
+    <input autocomplete="off" type="text" class="list-group-item list-group-item-action" id="dropDownParitySearch"
+           placeholder="Тип" ngModel #parityForm="ngModel" (ngModelChange)="searchParity(parityForm.value)"
+           (keydown.enter)="editParity(paritySearchResults![dropDownParity.index])"
+           (keydown.escape)="dropDownParity.lesson = null; parityForm.reset()"
+           (keydown.arrowUp)="dropDownParity.index = (dropDownParity.index + paritySearchResults!.length - 1) % paritySearchResults!.length"
+           (keydown.arrowDown)="dropDownParity.index = (dropDownParity.index + 1) % paritySearchResults!.length">
+    <div class="list-group-results">
+      <button *ngFor="let parity of paritySearchResults; let index = index" type="button" (click)="editParity(parity)"
+              [class.list-group-item-secondary]="parity.id == dropDownParity.lesson?.is_even_week"
+              [class.active]="index == dropDownParity.index"
+              class="list-group-item list-group-item-action">{{parity.name}}</button>
+    </div>
+  </div>
+</div>
+<!--Lesson Modal-->
+<div class="modal fade" id="createLessonModal" tabindex="-1" aria-labelledby="createLessonModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createLessonModalLabel">Академическая пара</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="createLessonModal!.hide()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #createLessonForm="ngForm" (ngSubmit)="createNewLesson(createLessonForm)">
+          <div class="d-inline-block" style="width: 65%; margin-right: 2%">
+            <label for="createLessonSubject">Предмет</label>
+            <select id="createLessonSubject" name="subject" required ngModel>
+              <option *ngFor="let subject of hc.curData!.subjects" value="{{subject.id}}">{{subject.name}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 33%">
+            <label for="createLessonClassroom">Кабинет</label>
+            <select id="createLessonClassroom" name="classroom" required ngModel>
+              <option *ngFor="let classroom of hc.curData!.classrooms" value="{{classroom}}">{{classroom || ""}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 28%; margin-right: 2%; margin-top: 2%; margin-bottom: 2%">
+            <label for="createLessonDay">День</label>
+            <select id="createLessonDay" name="day_name" required ngModel>
+              <option *ngFor="let day of daysOfWeek; let index = index" value="{{index}}">{{day}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 70%; margin-top: 2%; margin-bottom: 2%">
+            <label for="createLessonTeacher">Преподаватель</label>
+            <select id="createLessonTeacher" name="teacher" required ngModel>
+              <option *ngFor="let teacher of hc.data!.teachers" value="{{teacher.id}}">{{teacher.name}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 58%; margin-right: 2%; margin-bottom: 2%">
+            <label for="createLessonType">Формат</label>
+            <select id="createLessonType" name="type" required ngModel>
+              <option *ngFor="let type of typeNames" value="{{type.id}}">{{type.name}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 40%; margin-bottom: 2%">
+            <label for="createLessonParity">Чётность</label>
+            <select id="createLessonParity" name="parity" required ngModel>
+              <option *ngFor="let parity of parityNames" value="{{parity.id}}">{{parity.name}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 32%; margin-right: 2%; vertical-align: top">
+            <label for="createLessonGroup">Группа</label>
+            <select class="form-control" id="createLessonGroup" name="group" required ngModel>
+              <option *ngFor="let group of hc.curData!.groups" value="{{group.id}}">{{group.group_number}}</option>
+            </select>
+          </div>
+          <div class="d-inline-block" style="width: 32%; margin-right: 2%">
+            <label for="createLessonStartTime">Начало</label>
+            <input class="form-control" id="createLessonStartTime" name="start_time" type="time" required ngModel>
+          </div>
+          <div class="d-inline-block" style="width: 32%">
+            <label for="createLessonEndTime">Конец</label>
+            <input class="form-control" id="createLessonEndTime" name="start_time" type="time" required ngModel>
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="createLessonModal!.hide()">Отмена</button>
+        <button type="button" class="btn btn-primary" [class.disabled]="createLessonForm.invalid" (click)="createNewLesson(createLessonForm)">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Time Popup-->
+<div class="time-popup" style="{{'display:' + (showingTime.lesson ? 'block' : 'none') + (showingTime.lesson ? ';top:' + showingTime.top + 'px; left: ' + showingTime.left + 'px' : '')}}">
+  {{timeToString(showingTime.lesson?.start_time)}} - {{timeToString(showingTime.lesson?.end_time)}}
 </div>

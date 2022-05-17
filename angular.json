@@ -27,9 +27,25 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              {
+                "input": "src/assets/css/main.css",
+                "inject": true,
+                "bundleName": "main"
+              },
+              {
+                "input": "src/assets/css/http_cdn.jsdelivr.net_npm_select2@4.1.0-rc.0_dist_css_select2.css",
+                "inject": true,
+                "bundleName": "select2"
+              }
             ],
-            "scripts": []
+            "scripts": [
+              {
+                "input": "src/assets/scripts/http_cdn.jsdelivr.net_npm_select2@4.1.0-rc.0_dist_js_select2.full.js",
+                "inject": true,
+                "bundleName": "select2"
+              }
+            ]
           },
           "configurations": {
             "production": {
@@ -94,9 +110,25 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              {
+                "input": "src/css/main.css",
+                "inject": true,
+                "bundleName": "main"
+              },
+              {
+                "input": "src/css/http_cdn.jsdelivr.net_npm_select2@4.1.0-rc.0_dist_css_select2.css",
+                "inject": true,
+                "bundleName": "select2"
+              }
             ],
-            "scripts": []
+            "scripts": [
+              {
+                "input": "src/scripts/http_cdn.jsdelivr.net_npm_select2@4.1.0-rc.0_dist_js_select2.full.js",
+                "inject": true,
+                "bundleName": "select2"
+              }
+            ]
           }
         }
       }

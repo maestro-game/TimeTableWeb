@@ -1,7 +1,7 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import {NgModule} from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
 
-import { AppComponent } from './app.component';
+import {AppComponent} from './app.component';
 import {FormsModule} from "@angular/forms";
 import {CookieService} from "ngx-cookie-service";
 import {SignInComponent} from "./sign-in/sign-in.component";
@@ -12,10 +12,19 @@ import {AuthService} from "./_service/auth.service";
 import {TableComponent} from "./table/table.component";
 import {AuthGuard} from "../guard/auth.guard";
 import {HeaderComponent} from "./header/header.component";
+import {TeacherComponent} from "./teacher/teacher.component";
 
 const appRoutes: Routes = [
-  {path: 'table', component: TableComponent, canActivate: [AuthGuard]},
   {path: 'signIn', component: SignInComponent},
+  {
+    path: 'main',
+    component: HeaderComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {path: 'table', component: TableComponent},
+      {path: 'teacher', component: TeacherComponent}
+    ]
+  },
   {path: '**', redirectTo: '/signIn'}
 ];
 
@@ -24,7 +33,8 @@ const appRoutes: Routes = [
     AppComponent,
     SignInComponent,
     TableComponent,
-    HeaderComponent
+    HeaderComponent,
+    TeacherComponent
   ],
   imports: [
     BrowserModule,
@@ -35,4 +45,5 @@ const appRoutes: Routes = [
   providers: [HttpService, CookieService, AuthService, AuthGuard],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}
